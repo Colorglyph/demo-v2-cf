@@ -1,0 +1,21 @@
+name = "colorglyph-v2-wrangler"
+type = "javascript"
+compatibility_date = "2022-04-08"
+account_id = "dfd716443bca4859850dd27a6f885a60"
+usage_model = "bundled"
+workers_dev = true
+
+[vars]
+HORIZON_URL = "https://horizon-testnet.stellar.org"
+STELLAR_NETWORK = "TESTNET"
+FEE_PK = "GBISA2O4573KH6MW5TEUTF3E4MCIZLNHHUN6Y73XXAK4EV45OVKMH352"
+GLYPH_PK = "GDQFNMIICEUSNJ42XVN2DPANMSUAGUVKLCQT5C3SV3YDCXMJFOTPCLPE"
+COLOR_PK = "GAILK6CVLXS27D3PAOFRQKACVWUZGUMA2WMLL7I3OS4FCZBCPZDVHGII"
+
+[build]
+command = "npm run build"
+
+[build.upload]
+dir = "dist"
+format = "modules"
+main = "./index.mjs"
