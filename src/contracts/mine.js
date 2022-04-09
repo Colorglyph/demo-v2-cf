@@ -9,12 +9,15 @@ import {
 } from 'stellar-base'
 import shajs from 'sha.js'
 import { countBy } from 'lodash'
-import base62 from 'base62'
 
 import { handleResponse } from '../@js/utils'
 import { colorIssuer, feeAccount, glyphSponsor, XLM } from '../@js/vars'
 
-// CONCERNS:
+// TODO
+// Ensure royalty payments will be going to a created account (should we also ensure if it's an existing account that it's the userAccounts?)
+  // Probably not
+
+// CONCERNS
 // All colors cost the same atm
 // All colors are available
 
@@ -29,7 +32,9 @@ export default async ({
   HORIZON_URL,
   COLOR_SK,
 }) => {
-  colorSponsorIndex = base62.encode(colorSponsorIndex).padStart(6, 0)
+  if (parseInt(base62.decode(colorSponsorIndex)) > (62 ** 6 - 1))
+    throw new Error(`colorSponsorIndex out or range`)
+
   ogPalette = ogPalette.map((hex) => hex
     .substring(0, 6) // colorSponsorIndex codes can have valid capital letters
     .toLowerCase()
