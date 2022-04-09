@@ -1,3 +1,4 @@
+import base62 from 'base62'
 import BigNumber from 'bignumber.js'
 import {
   Networks,
