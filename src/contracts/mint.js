@@ -272,7 +272,7 @@ export default async ({
   })
 }
 
-// TODO:
+// TODO
 // sanitizeName and sanitizeDescription need to actually sanitize lmao
 // probably no reason to restructure the palette, should just throw if it's not perfect
 // no #, lowercase only, alpha numerics only, r,g,b numbers within 0-255 range, initial length is appropriate

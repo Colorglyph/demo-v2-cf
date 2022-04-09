@@ -55,8 +55,8 @@ export default async ({
   const colorSponsorAccount = colorSponsorKeypair.publicKey()
   const colorSponsorAccountLoaded = await fetch(`${HORIZON_URL}/accounts/${colorSponsorAccount}`)
   .then(handleResponse)
-  .catch((err) => { // TODO test this error response
-    if (err?.response?.status === 404)
+  .catch((err) => {
+    if (err?.status === 404)
       return null
     throw err
   })
@@ -172,7 +172,7 @@ export default async ({
 
         Operation.payment({ // Pay the feeAccount for all these fresh mints
           asset: XLM,
-          amount: new BigNumber(palette.length).times(0.1).toFixed(7), // TODO: numbers like this should be variable 
+          amount: new BigNumber(palette.length).times(0.1).toFixed(7), // TODO numbers like this should be variable 
           destination: feeAccount,
           source: userAccount
         }),
