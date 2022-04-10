@@ -1,8 +1,5 @@
 import BigNumber from 'bignumber.js'
-import {
-  Asset,
-  Claimant,
-} from 'stellar-base'
+import { Asset, Claimant } from 'stellar-base'
 
 export const smallest = '0.01'
 export const wholeDivSmallest = new BigNumber(1).div(smallest).toFixed(7)

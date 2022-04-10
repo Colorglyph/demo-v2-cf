@@ -4,7 +4,6 @@ import {
 } from 'stellar-base'
 import shajs from 'sha.js'
 
-
 export async function handleResponse(response) {
   if (response.ok)
     return response.headers.get('content-type')?.indexOf('json') > -1
