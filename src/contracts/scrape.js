@@ -19,6 +19,7 @@ import { XLM } from '../@js/vars'
 // Ensure issuer account is actually an issuer of an official COLORGLYPH asset
 // Lots of accounts can have sponsors, but only COLORGLYPH assets with sponsored accounts are legit
 // userAccount holds a COLORGLYPH asset issued by issuerAccount
+// Delete any open sell offers for this glyph
 
 export default async ({
   userAccount,
@@ -49,6 +50,16 @@ export default async ({
       throw new Error(`COLORGLYPH:${issuerAccount} is not able to be scraped`)
 
     ops.push(
+      Operation.setTrustLineFlags({ // Close any open offers selling glyph
+        asset: COLORGLYPH,
+        trustor: userAccount,
+        flags: {
+          authorized: false,
+          authorizedToMaintainLiabilities: false
+        },
+        source: issuerAccount
+      }),
+
       Operation.setTrustLineFlags({ // Open NFT authorization
         asset: COLORGLYPH,
         trustor: userAccount,
