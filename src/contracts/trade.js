@@ -22,13 +22,14 @@ export default async ({
   counterAsset,
   price,
   side,
-}, {
-  STELLAR_NETWORK,
-  HORIZON_URL,
-  GLYPH_SK
-}) => {
+}, env) => {
+  const {
+    STELLAR_NETWORK,
+    HORIZON_URL,
+    GLYPH_SIGNER_SK
+  } = env
   const ops = []
-  const signers = [Keypair.fromSecret(GLYPH_SK)]
+  const signers = [Keypair.fromSecret(GLYPH_SIGNER_SK)]
 
   const bigPrice = new BigNumber(price)
   const baseAsset = baseAssetIssuer ? new Asset('COLORGLYPH', baseAssetIssuer) : null
@@ -52,7 +53,7 @@ export default async ({
         baseAsset,
         counterAsset,
         ops,
-      })
+      }, env)
 
       else
       await buyGlyphForGlyph({
@@ -60,7 +61,7 @@ export default async ({
         baseAsset,
         counterAsset,
         ops,
-      })
+      }, env)
     }
 
     else {
@@ -72,7 +73,7 @@ export default async ({
         counterAsset,
         bigPrice,
         ops,
-      })
+      }, env)
 
       else {
         signers.pop() // Currently sellGlyphForX is a utility function and doesn't actually require system signing, so remove it
@@ -83,7 +84,7 @@ export default async ({
           counterAsset,
           bigPrice,
           ops,
-        })
+        }, env)
       }
     }
     
@@ -101,7 +102,7 @@ export default async ({
         baseAsset,
         counterAsset,
         ops,
-      })
+      }, env)
 
       else
       await sellGlyphForGlyph({
@@ -109,7 +110,7 @@ export default async ({
         baseAsset,
         counterAsset,
         ops,
-      })
+      }, env)
     }
 
     else {
@@ -118,7 +119,7 @@ export default async ({
         balanceId,
         userAccount,
         ops,
-      })
+      }, env)
 
       else
       await sellGlyphForX({
@@ -127,7 +128,7 @@ export default async ({
         counterAsset,
         bigPrice,
         ops,
-      })
+      }, env)
     }
   }
 

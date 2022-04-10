@@ -9,7 +9,7 @@ import {
 } from 'stellar-base'
 
 import { handleResponse } from '../@js/utils'
-import { feeAccount, glyphSigner, XLM } from '../@js/vars'
+import { XLM } from '../@js/vars'
 
 // WARN
 // What happens if you try and scrape with an open sell offer? Fails, you don't have an available COLORGLYPH to burn
@@ -26,7 +26,9 @@ export default async ({
 }, {
   STELLAR_NETWORK,
   HORIZON_URL,
-  GLYPH_SK
+  GLYPH_SIGNER_SK,
+  FEE_PK, 
+  GLYPH_SIGNER_PK,
 }) => {
   const COLORGLYPH = new Asset('COLORGLYPH', issuerAccount)
 
@@ -74,9 +76,9 @@ export default async ({
         source: issuerAccount
       }),
 
-      Operation.setOptions({ // Remove glyphSigner from the paletteAccount
+      Operation.setOptions({ // Remove GLYPH_SIGNER_PK from the paletteAccount
         signer: {
-          ed25519PublicKey: glyphSigner,
+          ed25519PublicKey: GLYPH_SIGNER_PK,
           weight: 0
         },
         source: paletteAccount
@@ -137,10 +139,10 @@ export default async ({
         source: paletteAccount
       }),
 
-      Operation.payment({ // Make a payment of 5 XLM to the feeAccount
+      Operation.payment({ // Make a payment of 5 XLM to the FEE_PK
         asset: XLM,
         amount: '5',
-        destination: feeAccount,
+        destination: FEE_PK,
         source: userAccount
       }),
     )
@@ -157,7 +159,7 @@ export default async ({
 
     transaction = transaction.build()
 
-    transaction.sign(Keypair.fromSecret(GLYPH_SK))
+    transaction.sign(Keypair.fromSecret(GLYPH_SIGNER_SK))
 
     return transaction.toXDR()
   })

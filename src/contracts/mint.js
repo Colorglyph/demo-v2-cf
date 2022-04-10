@@ -12,7 +12,7 @@ import {
 import paletteToManageData from './mint/palette-to-manage-data'
 
 import { handleResponse } from '../@js/utils'
-import { colorIssuer, feeAccount, glyphSigner, glyphSponsor, paletteSponsor, XLM } from '../@js/vars'
+import { XLM } from '../@js/vars'
 
 // WARN
 // We need to be _very_ sure the paletteAccount is safe to use
@@ -40,7 +40,12 @@ export default async ({
 }, {
   STELLAR_NETWORK,
   HORIZON_URL,
-  GLYPH_SK,
+  GLYPH_SIGNER_SK,
+  COLOR_ISSUER_PK,
+  FEE_PK, 
+  GLYPH_SIGNER_PK, 
+  GLYPH_SPONSOR_PK, 
+  PALETTE_SPONSOR_PK,
 }) => {
   ogPalette = ogPalette.map((hex) => hex
     .substring(0, 6) // colorSponsorIndex codes can have valid capital letters
@@ -83,21 +88,22 @@ export default async ({
 
     sanitizeBalances({
       balances: account.balances,
-      palette: ogPalette
+      palette: ogPalette,
+      COLOR_ISSUER_PK
     })
 
     const ops = []
 
     ops.push(
-      Operation.beginSponsoringFutureReserves({ // The paletteSponsor will sponsor the glyphSigner on the paletteAccount
+      Operation.beginSponsoringFutureReserves({ // The PALETTE_SPONSOR_PK will sponsor the GLYPH_SIGNER_PK on the paletteAccount
         sponsoredId: paletteAccount,
-        source: paletteSponsor
+        source: PALETTE_SPONSOR_PK
       }),
 
       Operation.setOptions({ // Set some options on the paletteAccount
         masterWeight: 0, // Remove the master signer
         signer: {
-          ed25519PublicKey: glyphSigner, // Add the glyph address as the primary signer
+          ed25519PublicKey: GLYPH_SIGNER_PK, // Add the glyph address as the primary signer
           weight: 1
         },
         source: paletteAccount
@@ -171,9 +177,9 @@ export default async ({
 
     if (!issuerAccountExists) {
       ops.push(
-        Operation.beginSponsoringFutureReserves({ // The glyphSponsor will sponsor the glyphSigner and the manage data attrs on the issuerAccount
+        Operation.beginSponsoringFutureReserves({ // The GLYPH_SPONSOR_PK will sponsor the GLYPH_SIGNER_PK and the manage data attrs on the issuerAccount
           sponsoredId: issuerAccount,
-          source: glyphSponsor
+          source: GLYPH_SPONSOR_PK
         }),
 
         Operation.setOptions({ // Set some options on the paletteAccount
@@ -182,7 +188,7 @@ export default async ({
           setFlags: 11, // Entirely lock down the NFT
           masterWeight: 0, // Remove the master signer
           signer: {
-            ed25519PublicKey: glyphSigner, // Add the glyph address as the primary signer
+            ed25519PublicKey: GLYPH_SIGNER_PK, // Add the glyph address as the primary signer
             weight: 1
           },
           source: issuerAccount
@@ -240,10 +246,10 @@ export default async ({
         source: issuerAccount
       }),
 
-      Operation.payment({ // Make a payment of >= 5 XLM profit to the feeAccount
+      Operation.payment({ // Make a payment of >= 5 XLM profit to the FEE_PK
         asset: XLM,
         amount: '5',
-        destination: feeAccount,
+        destination: FEE_PK,
         source: paletteAccount
       }),
     )
@@ -263,7 +269,7 @@ export default async ({
 
     transaction = transaction.build()
 
-    transaction.sign(Keypair.fromSecret(GLYPH_SK))
+    transaction.sign(Keypair.fromSecret(GLYPH_SIGNER_SK))
 
     if (!issuerAccountExists)
       transaction.sign(issuerKeypair)
@@ -300,14 +306,14 @@ function sanitizePalette(palette) {
     ]
   })
 }
-function sanitizeBalances({ balances, palette }) {
+function sanitizeBalances({ balances, palette, COLOR_ISSUER_PK }) {
   const colorCounts = countBy(palette)
 
   balances.forEach(({ asset_type, asset_code, asset_issuer, buying_liabilities, selling_liabilities, balance }) => {
     if (asset_type === 'native')
       return
 
-    if (asset_issuer !== colorIssuer)
+    if (asset_issuer !== COLOR_ISSUER_PK)
       throw new Error(`Asset ${asset_code}:${asset_issuer} is not a valid color asset. Please remove it from this account and try again`)
 
     if (

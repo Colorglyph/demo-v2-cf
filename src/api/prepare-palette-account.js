@@ -15,8 +15,8 @@ import { handleResponse } from "../@js/utils"
 export default async (request, { 
   STELLAR_NETWORK,
   HORIZON_URL,
-  COLOR_PK,
-  COLOR_SK,
+  COLOR_ISSUER_PK,
+  COLOR_ISSUER_SK,
 }, ctx) => {
   const body = await request.json()
 
@@ -68,7 +68,7 @@ export default async (request, {
 
     moveHexGroups.forEach(([, group]) => {
       const { account, asset_code } = group[0]
-      const COLOR = new Asset(asset_code, COLOR_PK)
+      const COLOR = new Asset(asset_code, COLOR_ISSUER_PK)
       const balance = new BigNumber(group.length).toFixed(0)
 
       ops.push(
@@ -87,7 +87,7 @@ export default async (request, {
     })
 
     makeHexCounts.forEach(([hex, count]) => {
-      const COLOR = new Asset(`${hex}${colorSponsorIndex}`, COLOR_PK)
+      const COLOR = new Asset(`${hex}${colorSponsorIndex}`, COLOR_ISSUER_PK)
       const balance = new BigNumber(count).toFixed(0)
 
       ops.push(
@@ -100,7 +100,7 @@ export default async (request, {
           destination: paletteAccount,
           amount: new BigNumber(balance).div(10000000).toFixed(7),
           asset: COLOR,
-          source: COLOR_PK
+          source: COLOR_ISSUER_PK
         }),
       )
     })
@@ -121,8 +121,8 @@ export default async (request, {
       if (!i)
         transaction.sign(paletteKeypair)
 
-      if (transaction.operations.findIndex(({ source }) => source === COLOR_PK) > -1)
-        transaction.sign(Keypair.fromSecret(COLOR_SK))
+      if (transaction.operations.findIndex(({ source }) => source === COLOR_ISSUER_PK) > -1)
+        transaction.sign(Keypair.fromSecret(COLOR_ISSUER_SK))
 
       return {
         sequence: account.sequence,

@@ -2,21 +2,10 @@
 
 import BigNumber from 'bignumber.js'
 import { countBy } from 'lodash'
-import {
-  Asset,
-  Claimant,
-  Operation
-} from 'stellar-base'
+import { Asset, Claimant, Operation } from 'stellar-base'
 
 import { getColorSponsorAccounts, handleResponse } from '../../@js/utils'
-import {
-  smallest,
-  wholeMinusSmallest,
-  feeAccount,
-  feeAccountClaimantPredicate,
-  XLM,
-  HORIZON_URL
-} from '../../@js/vars'
+import { smallest, wholeMinusSmallest, feeAccountClaimantPredicate, XLM } from '../../@js/vars'
 
 // TODO
 
@@ -29,6 +18,8 @@ export async function sellItNowGlyphForGlyph({
   baseAsset,
   counterAsset,
   ops,
+}, {
+  HORIZON_URL
 }) {
 
   // TODO
@@ -150,7 +141,7 @@ export async function sellItNowGlyphForX({
   balanceId,
   userAccount,
   ops,
-}) {
+}, env) {
 
   // TODO
   
@@ -162,6 +153,11 @@ export async function sellItNowGlyphForX({
   // Use payments vs claimable balances for royalty payments if trustline is already open on receiver account (will save on sub entry fees)
   // Support path payments where I can accept a buy offer for an asset I hold through an asset I don't
     // Someone buying GLYPH for USDC, I should be able to sell that glyph for GLYPH <> USDC <> XLM
+
+  const {
+    FEE_PK,
+    HORIZON_URL
+  } = env
 
   const claimableBalance = await fetch(`${HORIZON_URL}/claimable_balances/${balanceId}`).then(handleResponse)
 
@@ -183,7 +179,7 @@ export async function sellItNowGlyphForX({
   const [
     baseAssetIssuerAccountLoaded, 
     colorSponsorAccounts
-  ] = await getColorSponsorAccounts(baseAsset)
+  ] = await getColorSponsorAccounts(baseAsset, env)
 
   ops.push(
 
@@ -225,8 +221,8 @@ export async function sellItNowGlyphForX({
           account,
           Claimant.predicateUnconditional()
         ),
-        new Claimant( // Reclaimable by feeAccount in 336 days (28 * 12 days)
-          feeAccount,
+        new Claimant( // Reclaimable by FEE_PK in 336 days (28 * 12 days)
+          FEE_PK,
           feeAccountClaimantPredicate
         )
       ],
@@ -242,11 +238,11 @@ export async function sellItNowGlyphForX({
       amount: bigPrice.times(0.1).toFixed(7), // 10% og minter royalty 
       claimants: [
         new Claimant(
-          baseAssetIssuerAccountLoaded.inflation_destination || feeAccount,
+          baseAssetIssuerAccountLoaded.inflation_destination || FEE_PK,
           Claimant.predicateUnconditional()
         ),
-        new Claimant( // reclaimable by feeAccount in 336 days (28 * 12 days)
-          feeAccount,
+        new Claimant( // reclaimable by FEE_PK in 336 days (28 * 12 days)
+          FEE_PK,
           feeAccountClaimantPredicate
         )
       ],

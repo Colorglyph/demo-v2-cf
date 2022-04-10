@@ -1,14 +1,9 @@
 // Glyph seller is offering to sell for something specific
 
 import BigNumber from 'bignumber.js'
-import {
-  Operation,
-} from 'stellar-base'
+import { Operation } from 'stellar-base'
 
-import {
-  smallest,
-  wholeDivSmallest
-} from '../../@js/vars'
+import { smallest, wholeDivSmallest } from '../../@js/vars'
 
 // TODO
 

@@ -12,7 +12,7 @@ import shajs from 'sha.js'
 import { countBy } from 'lodash'
 
 import { handleResponse } from '../@js/utils'
-import { colorIssuer, feeAccount, glyphSponsor, XLM } from '../@js/vars'
+import { XLM } from '../@js/vars'
 
 // TODO
 // Ensure royalty payments will be going to a created account (should we also ensure if it's an existing account that it's the userAccounts?)
@@ -32,6 +32,9 @@ export default async ({
   STELLAR_NETWORK,
   HORIZON_URL,
   COLOR_SK,
+  COLOR_ISSUER_PK, 
+  FEE_PK, 
+  GLYPH_SPONSOR_PK,
 }) => {
   if (parseInt(base62.decode(colorSponsorIndex)) > (62 ** 6 - 1))
     throw new Error(`colorSponsorIndex out or range`)
@@ -56,7 +59,7 @@ export default async ({
     paletteAccount = paletteKeypair.publicKey()
   }
 
-  const colorSponsorHash = shajs('sha256').update(glyphSponsor).update(colorSponsorIndex).digest()
+  const colorSponsorHash = shajs('sha256').update(GLYPH_SPONSOR_PK).update(colorSponsorIndex).digest()
   const colorSponsorKeypair = Keypair.fromRawEd25519Seed(colorSponsorHash)
   const colorSponsorAccount = colorSponsorKeypair.publicKey()
   const colorSponsorAccountLoaded = await fetch(`${HORIZON_URL}/accounts/${colorSponsorAccount}`)
@@ -154,7 +157,7 @@ export default async ({
       signers.push(Keypair.fromSecret(COLOR_SK))
 
       paletteCounts.forEach(([asset_code, count]) => {
-        const COLOR = new Asset(asset_code, colorIssuer)
+        const COLOR = new Asset(asset_code, COLOR_ISSUER_PK)
 
         ops.push(
           Operation.changeTrust({
@@ -166,7 +169,7 @@ export default async ({
             destination: paletteAccount,
             amount: new BigNumber(count).div(10000000).toFixed(7),
             asset: COLOR,
-            source: colorIssuer
+            source: COLOR_ISSUER_PK
           }),
         )
       })
@@ -176,10 +179,10 @@ export default async ({
           source: paletteAccount
         }),
 
-        Operation.payment({ // Pay the feeAccount for all these fresh mints
+        Operation.payment({ // Pay the FEE_PK for all these fresh mints
           asset: XLM,
           amount: new BigNumber(palette.length).times(0.1).toFixed(7), // TODO numbers like this should be variable 
-          destination: feeAccount,
+          destination: FEE_PK,
           source: userAccount
         }),
       )
