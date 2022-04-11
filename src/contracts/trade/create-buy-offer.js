@@ -24,6 +24,7 @@ export async function buyGlyphForGlyph({
   // Support an option buy 1 base glyph with 1 of many counter glyphs
 
   ops.push(
+    
     // Open a trustline for the baseAsset on the sellers account
     Operation.changeTrust({
       asset: baseAsset,
@@ -103,7 +104,7 @@ export async function buyGlyphForX({
   // DONE
   // Configure an escrowed royalty payment
 
-  const escrowAmount = new BigNumber(bigPrice).times(1.6) // original bigPrice + 10% glyph royalty + 50% color royalty
+  const escrowAmount = new BigNumber(bigPrice) // .times(1.6) // original bigPrice + 10% glyph royalty + 50% color royalty
 
   // Not using classic offers as it's unintuitive to discover what offer was taken to know how much royalty you owe in the middle of the atomic transaction
   // Offer matching always takes the best baseAsset price so while you offer to sell your baseAsset for 100 XLM if an offer exists for 110 XLM the matching engine will actually take that offer 

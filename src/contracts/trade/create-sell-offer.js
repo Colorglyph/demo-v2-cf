@@ -99,7 +99,7 @@ export async function sellGlyphForX({
 
   // TODO
 
-  const escrowAmount = new BigNumber(bigPrice).times(1.6) // original bigPrice + 10% glyph royalty + 50% color royalty
+  const escrowAmount = new BigNumber(bigPrice).times(0.4) // .times(1.6) // original bigPrice + 10% glyph royalty + 50% color royalty
 
   ops.push(
     Operation.setTrustLineFlags({
