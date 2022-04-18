@@ -1,1 +1,0 @@
-- Ability to batch glyphs together into collections or animations

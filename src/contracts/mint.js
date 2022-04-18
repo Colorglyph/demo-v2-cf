@@ -12,24 +12,27 @@ import {
 import paletteToManageData from './mint/palette-to-manage-data'
 
 import { handleResponse } from '../@js/utils'
-import { XLM } from '../@js/vars'
 
 // WARN
 // We need to be _very_ sure the paletteAccount is safe to use
-// No weird signers
-// No weird assets
-// Don't mint if already minted
-// No open offers, colors must not be actively engaged in other markets  
-// Claimable balance reduces balance so no issues there
-// AMM either A) reduces balance or B) introduces additional trustlines so no issues there
-// Open offers can be detected via buying|selling liabilities so no issues there
-// If you try to mint with an open outstanding buy offer for the glyph you'll get a op line full error. You need to close the buy offer before minting
-// No open buy offers before minting
+  // No weird signers
+  // No weird assets
+// Colors must not be actively engaged in other markets
+  // Claimable balance reduces balance so no issues there
+  // AMM either A) reduces balance or B) introduces additional trustlines so no issues there
+  // Open offers can be detected via buying|selling liabilities so no issues there
+  // If you try to mint with an open outstanding buy offer for the glyph you'll get a op line full error. You need to close the buy offer before minting
 
 // TODO
 // Support or error when paletteAccount signer isn't master
-// Particularly true in the case of initial mints. Might be nice to have userAccount as a signer on palette accounts but in the case of initial mint this could cause issues
+  // Particularly true in the case of initial mints. Might be nice to have userAccount as a signer on palette accounts but in the case of initial mint this could cause issues
 // If using sponsored colors ensure trades will be possible (won't break the 100 atomic ops limit)
+// SanitizeName and sanitizeDescription need to actually sanitize lmao
+// Probably no reason to restructure the palette, should just throw if it's not perfect
+  // No #, lowercase only, alpha numerics only, r,g,b numbers within 0-255 range, initial length is appropriate
+
+// DONE
+// Don't mint if already minted
 
 export default async ({
   userAccount,
@@ -42,7 +45,7 @@ export default async ({
   HORIZON_URL,
   GLYPH_SIGNER_SK,
   COLOR_ISSUER_PK,
-  FEE_PK, 
+  // FEE_PK, 
   GLYPH_SIGNER_PK, 
   GLYPH_SPONSOR_PK, 
   PALETTE_SPONSOR_PK,
@@ -246,12 +249,12 @@ export default async ({
         source: issuerAccount
       }),
 
-      Operation.payment({ // Make a payment of >= 5 XLM profit to the FEE_PK
-        asset: XLM,
-        amount: '5',
-        destination: FEE_PK,
-        source: paletteAccount
-      }),
+      // Operation.payment({ // Make a payment of >= 5 XLM profit to the FEE_PK
+      //   asset: XLM,
+      //   amount: '5',
+      //   destination: FEE_PK,
+      //   source: paletteAccount
+      // }),
     )
 
     // Use the userAccount as the fee and sequence source
@@ -277,11 +280,6 @@ export default async ({
     return transaction.toXDR()
   })
 }
-
-// TODO
-// sanitizeName and sanitizeDescription need to actually sanitize lmao
-// probably no reason to restructure the palette, should just throw if it's not perfect
-// no #, lowercase only, alpha numerics only, r,g,b numbers within 0-255 range, initial length is appropriate
 
 function sanitizeName(name) {
   return name

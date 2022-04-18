@@ -1,0 +1,2 @@
+- Ability to batch glyphs together into collections or animations
+- Royalty percents as configurable variables

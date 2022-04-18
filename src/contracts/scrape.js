@@ -11,15 +11,9 @@ import {
 import { handleResponse } from '../@js/utils'
 import { XLM } from '../@js/vars'
 
-// WARN
-// What happens if you try and scrape with an open sell offer? Fails, you don't have an available COLORGLYPH to burn
-// No open sell offers before scraping
-
 // TODO
 // Ensure issuer account is actually an issuer of an official COLORGLYPH asset
-// Lots of accounts can have sponsors, but only COLORGLYPH assets with sponsored accounts are legit
-// userAccount holds a COLORGLYPH asset issued by issuerAccount
-// Delete any open sell offers for this glyph
+  // Lots of accounts can have sponsors, but only COLORGLYPH assets with sponsored accounts are legit
 
 export default async ({
   userAccount,
@@ -28,7 +22,7 @@ export default async ({
   STELLAR_NETWORK,
   HORIZON_URL,
   GLYPH_SIGNER_SK,
-  FEE_PK, 
+  // FEE_PK, 
   GLYPH_SIGNER_PK,
 }) => {
   const COLORGLYPH = new Asset('COLORGLYPH', issuerAccount)
@@ -150,12 +144,12 @@ export default async ({
         source: paletteAccount
       }),
 
-      Operation.payment({ // Make a payment of 5 XLM to the FEE_PK
-        asset: XLM,
-        amount: '5',
-        destination: FEE_PK,
-        source: userAccount
-      }),
+      // Operation.payment({ // Make a payment of 5 XLM to the FEE_PK
+      //   asset: XLM,
+      //   amount: '5',
+      //   destination: FEE_PK,
+      //   source: userAccount
+      // }),
     )
 
     let transaction = new TransactionBuilder(

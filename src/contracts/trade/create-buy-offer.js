@@ -1,6 +1,5 @@
 // Glyph buyer is offering to buy with something specific
 
-import BigNumber from 'bignumber.js'
 import { Claimant, Operation } from 'stellar-base'
 
 import { smallest } from '../../@js/vars'
@@ -104,8 +103,6 @@ export async function buyGlyphForX({
   // DONE
   // Configure an escrowed royalty payment
 
-  const escrowAmount = new BigNumber(bigPrice) // .times(1.6) // original bigPrice + 10% glyph royalty + 50% color royalty
-
   // Not using classic offers as it's unintuitive to discover what offer was taken to know how much royalty you owe in the middle of the atomic transaction
   // Offer matching always takes the best baseAsset price so while you offer to sell your baseAsset for 100 XLM if an offer exists for 110 XLM the matching engine will actually take that offer 
     // meaning you owe off 110 not the 100 you input
@@ -126,7 +123,7 @@ export async function buyGlyphForX({
         // We could require both a claimable balance and a sort of dummy proxy offer from the user account but until we're sure we need the /trade trick it's cheaper and easier to only use the cb
     Operation.createClaimableBalance({
       asset: counterAsset,
-      amount: escrowAmount.toFixed(7),
+      amount: bigPrice.toFixed(7),
       claimants: [
         new Claimant(
           // Who we'll send the baseAsset to should this offer be taken

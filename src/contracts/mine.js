@@ -17,8 +17,9 @@ import { XLM } from '../@js/vars'
 // TODO
 // Ensure royalty payments will be going to a created account (should we also ensure if it's an existing account that it's the userAccounts?)
   // Probably not
+// Disable the account setup scenario? It doesn't require our signer so it could be done client side
 
-// CONCERNS
+// WARN
 // All colors cost the same atm
 // All colors are available
 
@@ -181,7 +182,7 @@ export default async ({
 
         Operation.payment({ // Pay the FEE_PK for all these fresh mints
           asset: XLM,
-          amount: new BigNumber(palette.length).times(0.1).toFixed(7), // TODO numbers like this should be variable 
+          amount: new BigNumber(palette.length).times(0.1).toFixed(7),
           destination: FEE_PK,
           source: userAccount
         }),

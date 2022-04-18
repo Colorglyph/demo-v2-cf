@@ -73,7 +73,6 @@ export async function sellItNowGlyphForGlyph({
     }),
 
     // Use a path payment to ensure the expected transfer action occurs
-    // Using a path payment to ensure there's a trade op on record to query by as needed later (why we don't just use clawbacks / burns / re-mints solely)
     Operation.pathPaymentStrictSend({
       sendAsset: baseAsset,
       sendAmount: '1',
@@ -174,7 +173,7 @@ export async function sellItNowGlyphForX({
   
   const { destination: baseAssetIssuer } = claimableBalance.claimants.find(({destination}) => destination !== counterAccount)
   const baseAsset = new Asset('COLORGLYPH', baseAssetIssuer)
-  const bigPrice = new BigNumber(claimableBalance.amount).div(1.6) // original bigPrice + 10% glyph royalty + 50% color royalty
+  const bigPrice = new BigNumber(claimableBalance.amount)
 
   const [
     baseAssetIssuerAccountLoaded, 

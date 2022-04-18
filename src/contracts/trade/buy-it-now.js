@@ -72,8 +72,6 @@ export async function buyItNowGlyphForGlyph({
     }),
 
     // Use a path payment to ensure the expected transfer action occurs
-    // Using a path payment to ensure there's a trade op on record to query by as needed later (why we don't just use clawbacks / burns / re-mints solely)
-      // Maybe not actually true, offers are a nice way to discover, well, offers
     Operation.pathPaymentStrictSend({
       sendAsset: counterAsset,
       sendAmount: '1',
@@ -173,7 +171,47 @@ export async function buyItNowGlyphForX({
     colorSponsorAccounts
   ] = await getColorSponsorAccounts(baseAsset, env)
 
+  const basePrice = bigPrice.div(1.6)
+
+  // Create claimable balance payments of 50% of the price per pixel color to the color sponsor account
+  Object
+  .entries(countBy(colorSponsorAccounts))
+  .forEach(([account, count]) => ops.push(
+    Operation.createClaimableBalance({
+      asset: counterAsset,
+      amount: basePrice.times(0.5).times(count).div(256).toFixed(7), // e.g. 10 * 0.5 * 128 / 256 = 2.5
+      claimants: [
+        new Claimant(
+          account,
+          Claimant.predicateUnconditional()
+        ),
+        new Claimant( // Reclaimable by FEE_PK in 336 days (28 * 12 days)
+          FEE_PK,
+          feeAccountClaimantPredicate
+        )
+      ],
+      source: userAccount
+    })
+  ))
+
   ops.push(
+    
+    // Create a claimable balance payment of 10% of the price to the og minter
+    Operation.createClaimableBalance({
+      asset: counterAsset,
+      amount: basePrice.times(0.1).toFixed(7), // 10% og minter royalty 
+      claimants: [
+        new Claimant(
+          baseAssetIssuerAccountLoaded.inflation_destination || FEE_PK,
+          Claimant.predicateUnconditional()
+        ),
+        new Claimant( // reclaimable by FEE_PK in 336 days (28 * 12 days)
+          FEE_PK,
+          feeAccountClaimantPredicate
+        )
+      ],
+      source: userAccount
+    }),
 
     // Open a trustline on the buyers account
     Operation.changeTrust({
@@ -194,10 +232,9 @@ export async function buyItNowGlyphForX({
     }),
 
     // Use a path payment to ensure the expected transfer action occurs
-    // Using a path payment to ensure there's a trade op on record to query by as needed later (why we don't just use clawbacks / burns / re-mints solely)
     Operation.pathPaymentStrictSend({
       sendAsset: counterAsset,
-      sendAmount: bigPrice.times(0.4).toFixed(7),
+      sendAmount: basePrice.toFixed(7),
       destination: userAccount,
       destAsset: baseAsset,
       destMin: smallest,
@@ -241,45 +278,7 @@ export async function buyItNowGlyphForX({
       },
       source: baseAsset.issuer
     }),
-
-    // Create a claimable balance payment of 10% of the price to the og minter
-    Operation.createClaimableBalance({
-      asset: counterAsset,
-      amount: bigPrice.times(0.1).toFixed(7), // 10% og minter royalty 
-      claimants: [
-        new Claimant(
-          baseAssetIssuerAccountLoaded.inflation_destination || FEE_PK,
-          Claimant.predicateUnconditional()
-        ),
-        new Claimant( // reclaimable by FEE_PK in 336 days (28 * 12 days)
-          FEE_PK,
-          feeAccountClaimantPredicate
-        )
-      ],
-      source: userAccount
-    }),
   )
-
-  // Create claimable balance payments of 50% of the price per pixel color to the color sponsor account
-  Object
-  .entries(countBy(colorSponsorAccounts))
-  .forEach(([account, count]) => ops.push(
-    Operation.createClaimableBalance({
-      asset: counterAsset,
-      amount: bigPrice.times(0.5).times(count).div(256).toFixed(7), // e.g. 10 * 0.5 * 128 / 256 = 2.5
-      claimants: [
-        new Claimant(
-          account,
-          Claimant.predicateUnconditional()
-        ),
-        new Claimant( // Reclaimable by FEE_PK in 336 days (28 * 12 days)
-          FEE_PK,
-          feeAccountClaimantPredicate
-        )
-      ],
-      source: userAccount
-    })
-  ))
 
   return ops
 }

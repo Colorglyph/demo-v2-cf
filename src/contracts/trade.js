@@ -8,7 +8,7 @@ import {
 } from 'stellar-base'
 
 import { handleResponse } from '../@js/utils'
-import { XLM } from '../@js/vars'
+import { smallest, XLM } from '../@js/vars'
 
 import { buyItNowGlyphForGlyph, buyItNowGlyphForX } from './trade/buy-it-now'
 import { buyGlyphForGlyph, buyGlyphForX } from './trade/create-buy-offer'
@@ -41,13 +41,13 @@ export default async ({
   : null
 
   if (side === 'buy') {
-    const existingOffer = await fetch(`${HORIZON_URL}/offers?buying=${counterAsset.isNative() ? 'native' : `${counterAsset.code}:${counterAsset.issuer}`}&selling=${baseAsset.code}:${baseAsset.issuer}&limit=1&order=desc`)
+    const existingCounterOffer = await fetch(`${HORIZON_URL}/offers?buying=${counterAsset.isNative() ? 'native' : `${counterAsset.code}:${counterAsset.issuer}`}&selling=${baseAsset.code}:${baseAsset.issuer}&limit=1&order=desc`)
     .then(handleResponse)
     .then(({_embedded: {records}}) => records[0])
 
     if (counterAsset?.code === 'COLORGLYPH') {
 
-      if (existingOffer)
+      if (existingCounterOffer)
       await buyItNowGlyphForGlyph({
         userAccount,
         baseAsset,
@@ -66,8 +66,10 @@ export default async ({
 
     else {
       
-      if (existingOffer)
-      await buyItNowGlyphForX({
+      if (
+        existingCounterOffer
+        && new BigNumber(existingCounterOffer.price).times(existingCounterOffer.amount).times(1.6).isEqualTo(bigPrice) // Only buyItNowGlyphForX if the price matches
+      ) await buyItNowGlyphForX({
         userAccount,
         baseAsset,
         counterAsset,
@@ -76,7 +78,7 @@ export default async ({
       }, env)
 
       else {
-        signers.pop() // Currently sellGlyphForX is a utility function and doesn't actually require system signing, so remove it
+        signers.pop() // Currently buyGlyphForX is a utility function and doesn't actually require system signing, so remove it
 
         await buyGlyphForX({
           userAccount,
@@ -90,13 +92,14 @@ export default async ({
     
   }
 
-  else {
+  else { // side === 'sell'
+    
     if (counterAsset?.code === 'COLORGLYPH') {
-      const existingOffer = await fetch(`${HORIZON_URL}/offers?buying=${baseAsset.code}:${baseAsset.issuer}&selling=${counterAsset.isNative() ? 'native' : `${counterAsset.code}:${counterAsset.issuer}`}&limit=1&order=desc`)
+      const existingCounterOffer = await fetch(`${HORIZON_URL}/offers?buying=${baseAsset.code}:${baseAsset.issuer}&selling=${counterAsset.isNative() ? 'native' : `${counterAsset.code}:${counterAsset.issuer}`}&limit=1&order=desc`)
       .then(handleResponse)
       .then(({_embedded: {records}}) => records[0])
 
-      if (existingOffer)
+      if (existingCounterOffer)
       await sellItNowGlyphForGlyph({
         userAccount,
         baseAsset,
@@ -114,6 +117,7 @@ export default async ({
     }
 
     else {
+      
       if (balanceId)
       await sellItNowGlyphForX({
         balanceId,
@@ -121,14 +125,20 @@ export default async ({
         ops,
       }, env)
 
-      else
-      await sellGlyphForX({
-        userAccount,
-        baseAsset,
-        counterAsset,
-        bigPrice,
-        ops,
-      }, env)
+      else {
+        const existingBaseOffer = await fetch(`${HORIZON_URL}/offers?buying=${counterAsset.isNative() ? 'native' : `${counterAsset.code}:${counterAsset.issuer}`}&selling=${baseAsset.code}:${baseAsset.issuer}&limit=1&order=desc`)
+        .then(handleResponse)
+        .then(({_embedded: {records}}) => records[0])
+
+        await sellGlyphForX({
+          offerId: existingBaseOffer?.id,
+          userAccount,
+          baseAsset,
+          counterAsset,
+          bigPrice,
+          ops,
+        }, env)
+      }
     }
   }
 

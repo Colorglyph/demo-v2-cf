@@ -1,6 +1,5 @@
 // Glyph seller is offering to sell for something specific
 
-import BigNumber from 'bignumber.js'
 import { Operation } from 'stellar-base'
 
 import { smallest, wholeDivSmallest } from '../../@js/vars'
@@ -90,6 +89,7 @@ export async function sellGlyphForGlyph({
 
 // Create an offer to sell a Glyph for something else
 export async function sellGlyphForX({
+  offerId = 0,
   userAccount,
   baseAsset,
   counterAsset,
@@ -98,8 +98,6 @@ export async function sellGlyphForX({
 }) {
 
   // TODO
-
-  const escrowAmount = new BigNumber(bigPrice).times(0.4) // .times(1.6) // original bigPrice + 10% glyph royalty + 50% color royalty
 
   ops.push(
     Operation.setTrustLineFlags({
@@ -113,10 +111,11 @@ export async function sellGlyphForX({
     }),
 
     Operation.manageSellOffer({
+      offerId,
       selling: baseAsset,
       buying: counterAsset,
       amount: smallest, // By selling the smallest we permit 100 open offers for this asset and a max counter price of 21,474,836.47
-      price: escrowAmount.div(smallest).toFixed(7),
+      price: bigPrice.div(smallest).toFixed(7), // base + royalty
       source: userAccount
     }),
 
