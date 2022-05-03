@@ -1,16 +1,21 @@
 import BigNumber from 'bignumber.js'
-import {
-  Keypair,
-} from 'stellar-base'
+import { Keypair } from 'stellar-base'
 import shajs from 'sha.js'
 
 export async function handleResponse(response) {
+  const isResponseJson = response.headers.get('content-type')?.indexOf('json') > -1
+
   if (response.ok)
-    return response.headers.get('content-type')?.indexOf('json') > -1
+    return isResponseJson
     ? response.json() 
     : response.text()
 
-  throw response
+  throw isResponseJson
+  ? {
+    ...await response.json(),
+    status: response.status
+  }
+  : await response.text()
 }
 
 export async function getColorSponsorAccounts(baseAsset, {
