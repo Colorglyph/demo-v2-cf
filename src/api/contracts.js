@@ -1,5 +1,6 @@
 import { StatusError, text } from 'itty-router-extras'
 
+import setup from '../contracts/setup'
 import mine from '../contracts/mine'
 import mint from '../contracts/mint'
 import scrape from '../contracts/scrape'
@@ -11,6 +12,9 @@ export default async (request, env, ctx) => {
   let xdr
 
   switch(request.params.command) {
+    case 'setup':
+      xdr = await setup(body, env)
+    break
     case 'mine':
       xdr = await mine(body, env)
     break
