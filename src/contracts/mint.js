@@ -51,7 +51,7 @@ export default async ({
   PALETTE_SPONSOR_PK,
 }) => {
   const userAccountLoaded = await fetch(`${HORIZON_URL}/accounts/${userAccount}`).then(handleResponse)
-  const royaltyIndex = userAccountLoaded.data_attr.royaltyindex
+  const royaltyIndex = userAccountLoaded.data.royaltyindex ? Buffer.from(userAccountLoaded.data.royaltyindex, 'base64') : -1
 
   if (parseInt(royaltyIndex) < 0)
     throw new Error(`Missing a valid royaltyindex`)

@@ -50,7 +50,7 @@ export default async ({
   .then((account) => {
     const ops = []
     const signers = []
-    const royaltyIndex = account.data_attr.royaltyindex
+    const royaltyIndex = account.data.royaltyindex ? Buffer.from(account.data.royaltyindex, 'base64') : -1
 
     if (parseInt(royaltyIndex) < 0)
       throw new Error(`Missing a valid royaltyindex`)
