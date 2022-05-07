@@ -3,7 +3,7 @@
 import { Operation, Claimant } from 'stellar-base'
 import { countBy } from 'lodash'
 
-import { handleResponse, getColorSponsorAccounts } from '../../@js/utils'
+import { handleResponse, getRoyaltyAccounts } from '../../@js/utils'
 import { smallest, wholeMinusSmallest, feeAccountClaimantPredicate } from '../../@js/vars'
 
 // TODO
@@ -168,14 +168,14 @@ export async function buyItNowGlyphForX({
 
   const [
     baseAssetIssuerAccountLoaded, 
-    colorSponsorAccounts
-  ] = await getColorSponsorAccounts(baseAsset, env)
+    royaltyAccounts
+  ] = await getRoyaltyAccounts(baseAsset, env)
 
   const basePrice = bigPrice.div(1.6)
 
   // Create claimable balance payments of 50% of the price per pixel color to the color sponsor account
   Object
-  .entries(countBy(colorSponsorAccounts))
+  .entries(countBy(royaltyAccounts))
   .forEach(([account, count]) => ops.push(
     Operation.createClaimableBalance({
       asset: counterAsset,

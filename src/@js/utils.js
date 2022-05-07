@@ -18,27 +18,27 @@ export async function handleResponse(response) {
   : await response.text()
 }
 
-export async function getColorSponsorAccounts(baseAsset, {
+export async function getRoyaltyAccounts(baseAsset, {
   COLOR_ISSUER_PK,
   GLYPH_SPONSOR_PK,
   HORIZON_URL, 
 }) {
   const baseAssetIssuerAccountLoaded = await fetch(`${HORIZON_URL}/accounts/${baseAsset.issuer}`).then(handleResponse)
   const baseAssetPaletteAccountLoaded = await fetch(`${HORIZON_URL}/accounts/${baseAssetIssuerAccountLoaded.sponsor}`).then(handleResponse)
-  const colorSponsorAccounts = baseAssetPaletteAccountLoaded.balances
+  const royaltyAccounts = baseAssetPaletteAccountLoaded.balances
   .filter(({ asset_issuer }) => asset_issuer === COLOR_ISSUER_PK)
   .map(({ asset_code, balance }) => {
-    const colorSponsorIndex = asset_code.substring(6)
-    const colorSponsorHash = shajs('sha256').update(GLYPH_SPONSOR_PK).update(colorSponsorIndex).digest()
-    const colorSponsorKeypair = Keypair.fromRawEd25519Seed(colorSponsorHash)
-    const colorSponsorAccount = colorSponsorKeypair.publicKey()
+    const royaltyIndex = asset_code.substring(6)
+    const royaltyHash = shajs('sha256').update(GLYPH_SPONSOR_PK).update(royaltyIndex).digest()
+    const royaltyKeypair = Keypair.fromRawEd25519Seed(royaltyHash)
+    const royaltyAccount = royaltyKeypair.publicKey()
 
-    return new Array(new BigNumber(balance).times(1e7).toNumber()).fill(colorSponsorAccount)
+    return new Array(new BigNumber(balance).times(1e7).toNumber()).fill(royaltyAccount)
   })
   .flat()
   
   return [
     baseAssetIssuerAccountLoaded,
-    colorSponsorAccounts
+    royaltyAccounts
   ] 
 }

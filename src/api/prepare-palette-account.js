@@ -22,16 +22,16 @@ export default async (request, {
 
   let {
     userAccount,
-    colorSponsorIndex,
+    royaltyIndex,
     movePalette,
     makePalette
   } = body
 
   makePalette = makePalette.map((hex) => hex
-    .substring(0, 6) // colorSponsorIndex codes can have valid capital letters
+    .substring(0, 6) // royaltyIndex codes can have valid capital letters
     .toLowerCase()
     .replace(/\W/gi, '')
-    + hex.substring(6)
+    // + hex.substring(6)
   )
 
   const paletteKeypair = Keypair.random()
@@ -87,7 +87,7 @@ export default async (request, {
     })
 
     makeHexCounts.forEach(([hex, count]) => {
-      const COLOR = new Asset(`${hex}${colorSponsorIndex}`, COLOR_ISSUER_PK)
+      const COLOR = new Asset(`${hex}${royaltyIndex}`, COLOR_ISSUER_PK)
       const balance = new BigNumber(count).toFixed(0)
 
       ops.push(
