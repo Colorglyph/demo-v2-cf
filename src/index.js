@@ -22,5 +22,9 @@ export default {
     res.headers.append('Access-Control-Allow-Origin', '*') // cors ftw
     return res 
   })
-  .catch((err) => error(err.status, err?.message || err))
+  .catch((err) => {
+    err = error(err.status, err?.message || err)
+    err.headers.append('Access-Control-Allow-Origin', '*') // cors ftw
+    return err
+  })
 }
