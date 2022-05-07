@@ -8,6 +8,7 @@ import {
   Keypair,
   Account
 } from 'stellar-base'
+import shajs from 'sha.js'
 
 import paletteToManageData from './mint/palette-to-manage-data'
 
@@ -45,13 +46,22 @@ export default async ({
   HORIZON_URL,
   GLYPH_SIGNER_SK,
   COLOR_ISSUER_PK,
-  // FEE_PK, 
   GLYPH_SIGNER_PK, 
   GLYPH_SPONSOR_PK, 
   PALETTE_SPONSOR_PK,
 }) => {
+  const userAccountLoaded = await fetch(`${HORIZON_URL}/accounts/${userAccount}`).then(handleResponse)
+  const royaltyIndex = userAccountLoaded.data_attr.royaltyindex
+
+  if (parseInt(royaltyIndex) < 0)
+    throw new Error(`Missing a valid royaltyindex`)
+
+  const royaltyHash = shajs('sha256').update(GLYPH_SPONSOR_PK).update(royaltyIndex).digest()
+  const royaltyKeypair = Keypair.fromRawEd25519Seed(royaltyHash)
+  const royaltyAccount = royaltyKeypair.publicKey()
+
   ogPalette = ogPalette.map((hex) => hex
-    .substring(0, 6) // colorSponsorIndex codes can have valid capital letters
+    .substring(0, 6) // royaltyIndex codes can have valid capital letters
     .toLowerCase()
     .replace(/\W/gi, '')
     + hex.substring(6)
@@ -187,7 +197,7 @@ export default async ({
 
         Operation.setOptions({ // Set some options on the paletteAccount
           homeDomain: 'colorglyph.io',
-          inflationDest: userAccount, // Mark the userAccount as the OG minter (could be used for royalties later) (might be better to use a sponsored signer)
+          inflationDest: royaltyAccount, // Mark the user's royaltyAccount as the OG minter (wll be used for royalties later) (might be better to use a sponsored signer)
           setFlags: 11, // Entirely lock down the NFT
           masterWeight: 0, // Remove the master signer
           signer: {
@@ -257,11 +267,8 @@ export default async ({
       // }),
     )
 
-    // Use the userAccount as the fee and sequence source
-    const userAccountLoaded = await fetch(`${HORIZON_URL}/accounts/${userAccount}`).then(handleResponse)
-
     let transaction = new TransactionBuilder(
-      new Account(userAccountLoaded.id, userAccountLoaded.sequence), 
+      new Account(userAccountLoaded.id, userAccountLoaded.sequence), // Use the userAccount as the fee and sequence source
       {
         fee: new BigNumber(1).div('0.0000001').div(ops.length).toFixed(0, 3), // 1 XLM div # of ops
         networkPassphrase: Networks[STELLAR_NETWORK]
