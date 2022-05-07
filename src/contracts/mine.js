@@ -1,4 +1,3 @@
-import base62 from 'base62'
 import BigNumber from 'bignumber.js'
 import {
   Networks,
@@ -8,16 +7,10 @@ import {
   Keypair,
   Account,
 } from 'stellar-base'
-import shajs from 'sha.js'
 import { countBy } from 'lodash'
 
 import { handleResponse } from '../@js/utils'
 import { XLM } from '../@js/vars'
-
-// TODO
-// Ensure royalty payments will be going to a created account (should we also ensure if it's an existing account that it's the userAccounts?)
-  // Probably not
-// Disable the account setup scenario? It doesn't require our signer so it could be done client side
 
 // WARN
 // All colors cost the same atm
@@ -27,30 +20,22 @@ export default async ({
   userAccount,
   paletteSecret,
   paletteAccount,
-  palette: ogPalette = [],
-  colorSponsorIndex
+  palette: ogPalette = []
 }, { 
   STELLAR_NETWORK,
   HORIZON_URL,
   COLOR_SK,
   COLOR_ISSUER_PK, 
-  FEE_PK, 
-  GLYPH_SPONSOR_PK,
+  FEE_PK,
 }) => {
-  if (parseInt(base62.decode(colorSponsorIndex)) > (62 ** 6 - 1))
-    throw new Error(`colorSponsorIndex out or range`)
-
   ogPalette = ogPalette.map((hex) => hex
-    .substring(0, 6) // colorSponsorIndex codes can have valid capital letters
+    .substring(0, 6) // royaltyIndex codes can have valid capital letters
     .toLowerCase()
     .replace(/\W/gi, '')
     + hex.substring(6)
   )
 
   let paletteKeypair
-
-  const palette = sanitizePalette(ogPalette, colorSponsorIndex)
-  const paletteCounts = Object.entries(countBy(palette))
 
   if (
     !paletteAccount
@@ -60,67 +45,22 @@ export default async ({
     paletteAccount = paletteKeypair.publicKey()
   }
 
-  const colorSponsorHash = shajs('sha256').update(GLYPH_SPONSOR_PK).update(colorSponsorIndex).digest()
-  const colorSponsorKeypair = Keypair.fromRawEd25519Seed(colorSponsorHash)
-  const colorSponsorAccount = colorSponsorKeypair.publicKey()
-  const colorSponsorAccountLoaded = await fetch(`${HORIZON_URL}/accounts/${colorSponsorAccount}`)
-  .then(handleResponse)
-  .catch((err) => {
-    if (err?.status === 404)
-      return null
-    throw err
-  })
-
   return fetch(`${HORIZON_URL}/accounts/${userAccount}`)
   .then(handleResponse)
   .then((account) => {
     const ops = []
     const signers = []
+    const royaltyIndex = account.data_attr.royaltyindex
 
-    if (
-      colorSponsorAccountLoaded
-      && colorSponsorAccountLoaded.sponsor !== userAccount
-    ) throw new Error(`Cannot mine colors from an account you do not sponsor`)
+    if (parseInt(royaltyIndex) < 0)
+      throw new Error(`Missing a valid royaltyindex`)
 
-    if (!colorSponsorAccountLoaded) {
-      signers.push(colorSponsorKeypair)
-
-      ops.push(
-        Operation.beginSponsoringFutureReserves({ // The userAccount will sponsor the colorSponsorAccount
-          sponsoredId: colorSponsorAccount,
-          source: userAccount
-        }),
-
-        Operation.createAccount({ // Create a new colorSponsorAccount
-          destination: colorSponsorAccount,
-          startingBalance: '0',
-          source: userAccount
-        }),
-
-        Operation.setOptions({ // Set some options on the colorSponsorAccount
-          masterWeight: 0, // Remove the master signer
-          signer: {
-            ed25519PublicKey: userAccount, // Add the userAccount as the primary signer
-            weight: 1
-          },
-          source: colorSponsorAccount
-        }),
-
-        Operation.endSponsoringFutureReserves({ // Close sponsorship
-          source: colorSponsorAccount
-        }),
-
-        Operation.manageData({
-          name: 'colorsponsorindex', // Maybe colorroyaltyindex or just royaltyindex or maybe just cgindex
-          value: colorSponsorIndex,
-          source: userAccount
-        })
-      )
-    }
+    const palette = sanitizePalette(ogPalette, royaltyIndex)
+    const paletteCounts = Object.entries(countBy(palette))
 
     if (paletteAccount) {
 
-      if ( paletteKeypair) { // Create new paletteAccount
+      if (paletteKeypair) { // Create new paletteAccount
         signers.push(paletteKeypair)
 
         ops.push(
@@ -130,7 +70,7 @@ export default async ({
             source: userAccount
           }),
 
-          Operation.beginSponsoringFutureReserves({ // The userAccount will sponsor the colorSponsorAccount
+          Operation.beginSponsoringFutureReserves({ // The userAccount will sponsor the paletteAccount
             sponsoredId: paletteAccount,
             source: userAccount
           }),
@@ -147,7 +87,7 @@ export default async ({
       }
 
       else ops.push( // Reuse existing paletteAccount
-        Operation.beginSponsoringFutureReserves({ // The userAccount will sponsor the colorSponsorAccount
+        Operation.beginSponsoringFutureReserves({ // The userAccount will sponsor the paletteAccount
           sponsoredId: paletteAccount,
           source: userAccount
         }),
