@@ -6,6 +6,7 @@ import claimableBalances from '../proxy/claimable-balances'
 import offers from '../proxy/offers'
 import palettes from '../proxy/palettes'
 import userOffers from "../proxy/user-offers"
+import userGlyphs from "../proxy/user-glyphs"
 
 export default async (request, env, ctx) => {
   const cache = caches.default
@@ -40,6 +41,9 @@ export default async (request, env, ctx) => {
     break
     case 'user-offers':
       res = await userOffers(args)
+    break
+    case 'user-glyphs':
+      res = await userGlyphs(args)
     break
     case 'palettes':
       res = await palettes(args)
