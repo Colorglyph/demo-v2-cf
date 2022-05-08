@@ -1,10 +1,11 @@
 import { json, StatusError } from "itty-router-extras"
 
-import account from '../proxy/account'
+import accounts from '../proxy/accounts'
 import glyphs from '../proxy/glyphs'
 import claimableBalances from '../proxy/claimable-balances'
 import offers from '../proxy/offers'
 import palettes from '../proxy/palettes'
+import userOffers from "../proxy/user-offers"
 
 export default async (request, env, ctx) => {
   const cache = caches.default
@@ -25,8 +26,8 @@ export default async (request, env, ctx) => {
   }
 
   switch(params.route) {
-    case 'account':
-      res = await account(args)
+    case 'accounts':
+      res = await accounts(args)
     break
     case 'glyphs':
       res = await glyphs(args)
@@ -36,6 +37,9 @@ export default async (request, env, ctx) => {
     break
     case 'offers':
       res = await offers(args)
+    break
+    case 'user-offers':
+      res = await userOffers(args)
     break
     case 'palettes':
       res = await palettes(args)
