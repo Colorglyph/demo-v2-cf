@@ -22,7 +22,7 @@ export default async ({ query, env, swap }) => {
   .then(handleResponse)
   .then(({_embedded: {records}}) => records
     .map((record) =>
-      pick(record, ['id', 'selling', 'buying', 'amount', 'price'])
+      pick(record, ['id', 'seller', 'selling', 'buying', 'amount', 'price'])
     )
     .map((record) => {
       if (record.selling.asset_type !== 'native')

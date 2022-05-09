@@ -20,11 +20,12 @@ export default ({ query, env }) => {
   .then(handleResponse)
   .then(({_embedded: {records}}) => records
     .map((record) =>
-      pick(record, ['id', 'asset', 'amount', 'claimants'])
+      pick(record, ['id', 'sponsor', 'asset', 'amount', 'claimants'])
     )
     .map((record) => {
       record.claimants.forEach(({destination}) => {
-        if (destination === query.id) 
+        if (record.sponsor === destination) {
+          record.seller = destination
           record.selling = record.asset === 'native'
           ? {
             asset_type: 'native'
@@ -33,6 +34,7 @@ export default ({ query, env }) => {
             asset_code: record.asset.split(':')[0],
             asset_issuer: record.asset.split(':')[1]
           }
+        }
         else record.buying = {
           asset_code: 'COLORGLYPH',
           asset_issuer: destination
@@ -41,6 +43,7 @@ export default ({ query, env }) => {
 
       record.cost = record.amount
 
+      delete record.sponsor
       delete record.asset
       delete record.amount
       delete record.claimants

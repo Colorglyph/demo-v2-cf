@@ -1,7 +1,7 @@
 import BigNumber from "bignumber.js"
 import Bluebird from 'bluebird'
 
-import getAccount from './accounts'
+import getAccount from './account'
 import getOffers from './offers'
 import getClaimableBalances from './claimable-balances'
 
