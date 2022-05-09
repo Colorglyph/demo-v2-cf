@@ -13,6 +13,7 @@ import shajs from 'sha.js'
 import paletteToManageData from './mint/palette-to-manage-data'
 
 import { handleResponse } from '../@js/utils'
+import { XLM } from '../@js/vars'
 
 // WARN
 // We need to be _very_ sure the paletteAccount is safe to use
@@ -47,7 +48,8 @@ export default async ({
   GLYPH_SIGNER_SK,
   COLOR_ISSUER_PK,
   GLYPH_SIGNER_PK, 
-  GLYPH_SPONSOR_PK, 
+  GLYPH_SPONSOR_PK,
+  SCRAPED_SPONSOR_PK, 
   PALETTE_SPONSOR_PK,
 }) => {
   const userAccountLoaded = await fetch(`${HORIZON_URL}/accounts/${userAccount}`).then(handleResponse)
@@ -141,6 +143,30 @@ export default async ({
       Operation.endSponsoringFutureReserves({ // Close sponsorship
         source: issuerAccount
       }),
+
+      Operation.payment({
+        asset: XLM,
+        destination: GLYPH_SPONSOR_PK,
+        amount: '0.5',
+        source: SCRAPED_SPONSOR_PK
+      }),
+
+      Operation.beginSponsoringFutureReserves({ // The GLYPH_SPONSOR_PK will now sponsor the GLYPH_SIGNER_PK for live glyphs
+        sponsoredId: SCRAPED_SPONSOR_PK,
+        source: GLYPH_SPONSOR_PK
+      }),
+
+      Operation.revokeSignerSponsorship({
+        account: issuerAccount,
+        signer: {
+          ed25519PublicKey: GLYPH_SIGNER_PK,
+        },
+        source: SCRAPED_SPONSOR_PK
+      }),
+
+      Operation.endSponsoringFutureReserves({
+        source: SCRAPED_SPONSOR_PK
+      }),
     )
 
     else ops.push(
@@ -206,6 +232,17 @@ export default async ({
           },
           source: issuerAccount
         }),
+      
+        Operation.endSponsoringFutureReserves({ // Close sponsorship
+          source: issuerAccount
+        }),
+
+        Operation.payment({
+          asset: XLM,
+          destination: issuerAccount,
+          amount: new BigNumber(manageData.length).times(0.5).toFixed(7),
+          source: userAccount
+        }),
       )
 
       manageData.forEach(([name, value]) => // Push the sep39 manage data attrs into the issuerAccount if they don't already exist
@@ -216,12 +253,6 @@ export default async ({
             source: issuerAccount
           })
         )
-      )
-
-      ops.push(
-        Operation.endSponsoringFutureReserves({ // Close sponsorship
-          source: issuerAccount
-        }),
       )
     }
 
@@ -258,13 +289,6 @@ export default async ({
         },
         source: issuerAccount
       }),
-
-      // Operation.payment({ // Make a payment of >= 5 XLM profit to the FEE_PK
-      //   asset: XLM,
-      //   amount: '5',
-      //   destination: FEE_PK,
-      //   source: paletteAccount
-      // }),
     )
 
     let transaction = new TransactionBuilder(

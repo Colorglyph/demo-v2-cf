@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@lunapaint/png-codec": "^0.2.0",
+    "@tinyanvil/base91": "^0.0.1",
     "base62": "^2.0.1",
     "bignumber.js": "^9.0.2",
     "bluebird": "^3.7.2",

@@ -22,7 +22,8 @@ export default async ({
   STELLAR_NETWORK,
   HORIZON_URL,
   GLYPH_SIGNER_SK,
-  // FEE_PK, 
+  GLYPH_SPONSOR_PK,
+  SCRAPED_SPONSOR_PK,
   GLYPH_SIGNER_PK,
 }) => {
   const COLORGLYPH = new Asset('COLORGLYPH', issuerAccount)
@@ -120,6 +121,30 @@ export default async ({
         source: userAccount
       }),
 
+      Operation.payment({
+        asset: XLM,
+        destination: SCRAPED_SPONSOR_PK,
+        amount: '0.5',
+        source: GLYPH_SPONSOR_PK
+      }),
+
+      Operation.beginSponsoringFutureReserves({ // The SCRAPED_SPONSOR_PK will now sponsor the GLYPH_SIGNER_PK for scraped glyphs
+        sponsoredId: GLYPH_SPONSOR_PK,
+        source: SCRAPED_SPONSOR_PK
+      }),
+
+      Operation.revokeSignerSponsorship({
+        account: issuerAccount,
+        signer: {
+          ed25519PublicKey: GLYPH_SIGNER_PK,
+        },
+        source: GLYPH_SPONSOR_PK
+      }),
+
+      Operation.endSponsoringFutureReserves({
+        source: GLYPH_SPONSOR_PK
+      }),
+
       Operation.revokeAccountSponsorship({
         account: paletteAccount,
         source: issuerAccount
@@ -143,13 +168,6 @@ export default async ({
         amount: '1',
         source: paletteAccount
       }),
-
-      // Operation.payment({ // Make a payment of 5 XLM to the FEE_PK
-      //   asset: XLM,
-      //   amount: '5',
-      //   destination: FEE_PK,
-      //   source: userAccount
-      // }),
     )
 
     let transaction = new TransactionBuilder(
