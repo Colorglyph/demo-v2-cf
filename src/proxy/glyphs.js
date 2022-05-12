@@ -3,8 +3,6 @@ import Bluebird from 'bluebird'
 import sep39 from "../api/sep39"
 import { handleResponse } from "../@js/utils"
 
-// TODO load sep39 data
-
 export default ({ query, env }) => {
   const { HORIZON_URL, STELLAR_NETWORK, GLYPH_SPONSOR_PK, SCRAPED_SPONSOR_PK } = env
   const sponsor = query.scraped === 'true' ? SCRAPED_SPONSOR_PK : GLYPH_SPONSOR_PK
