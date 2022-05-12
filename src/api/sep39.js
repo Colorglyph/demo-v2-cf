@@ -6,14 +6,12 @@ import { handleResponse } from '../@js/utils'
 const base91 = new Base91()
 
 export default async ({ url, search }) => {
-  const { pathname } = url
-  const [, , publicKey] = pathname.split('/')
-  const { name = 'image', network = 'public' } = search
+  const { pathname } = url || {}
+  const [, , publicKey] = pathname?.split('/') || []
+  const { id, name = 'image', network = 'public' } = search
   const horizon = network === 'public' ? 'https://horizon.stellar.org' : 'https://horizon-testnet.stellar.org'
 
-  console.log(`${horizon}/accounts/${publicKey}`)
-
-  const { mime, value } = await fetch(`${horizon}/accounts/${publicKey}`, {
+  const { mime, value } = await fetch(`${horizon}/accounts/${publicKey || id}`, {
     cf: {
       cacheTtlByStatus: { '200-299': 3600 }
     },

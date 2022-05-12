@@ -11,8 +11,8 @@ export default ({ query, env }) => {
   .then(handleResponse)
   .then(({_embedded: {records}}) => Bluebird.map(records, async (record) => {
     await sep39({
-      url: new URL(`file:////${record.id}`),
       search: {
+        id: record.id,
         name: 'json',
         network: STELLAR_NETWORK.toLowerCase()
       }

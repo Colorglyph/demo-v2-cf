@@ -28,8 +28,8 @@ export default ({ query, env }) => {
       getOffers({query: {selling: glyph.asset_issuer}, env}),
 
       sep39({
-        url: new URL(`file:////${glyph.asset_issuer}`),
         search: {
+          id: glyph.asset_issuer,
           name: 'json',
           network: STELLAR_NETWORK.toLowerCase()
         }

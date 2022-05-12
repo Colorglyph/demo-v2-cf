@@ -19,8 +19,8 @@ export default ({ query, env }) => {
       getOffers({query: {selling: account.id}, env}), // Offers to sell glyph
 
       sep39({
-        url: new URL(`file:////${account.id}`),
         search: {
+          id: account.id,
           name: 'json',
           network: STELLAR_NETWORK.toLowerCase()
         }
