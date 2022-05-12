@@ -110,6 +110,13 @@ export default async ({
     const ops = []
 
     ops.push(
+      Operation.payment({
+        asset: XLM,
+        destination: PALETTE_SPONSOR_PK,
+        amount: '0.5',
+        source: userAccount
+      }),
+
       Operation.beginSponsoringFutureReserves({ // The PALETTE_SPONSOR_PK will sponsor the GLYPH_SIGNER_PK on the paletteAccount
         sponsoredId: paletteAccount,
         source: PALETTE_SPONSOR_PK
@@ -216,6 +223,13 @@ export default async ({
 
     if (!issuerAccountExists) {
       ops.push(
+        Operation.payment({
+          asset: XLM,
+          destination: GLYPH_SPONSOR_PK,
+          amount: '0.5',
+          source: userAccount
+        }),
+
         Operation.beginSponsoringFutureReserves({ // The GLYPH_SPONSOR_PK will sponsor the GLYPH_SIGNER_PK and the manage data attrs on the issuerAccount
           sponsoredId: issuerAccount,
           source: GLYPH_SPONSOR_PK

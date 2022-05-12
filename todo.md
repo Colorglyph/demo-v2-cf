@@ -1,3 +1,6 @@
+TODO
+- Try and close empty trustlines
+
 TEST 
 - What happens when you try to sell the same glyph for the same asset and same amount?
   - Different amount?

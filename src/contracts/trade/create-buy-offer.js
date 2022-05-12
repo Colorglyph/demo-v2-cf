@@ -5,7 +5,6 @@ import { Claimant, Operation } from 'stellar-base'
 import { smallest } from '../../@js/vars'
 
 // TODO
-// Able to create multiple of the same buy offer, is that fine? Maybe
 
 // Create an offer to buy a Glyph with a Glyph
 export async function buyGlyphForGlyph({
