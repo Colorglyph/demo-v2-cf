@@ -37,6 +37,7 @@ export default async ({ query, env, swap }) => {
         && record.selling.asset_code === 'COLORGLYPH'
       ) swap.push(record)
 
+      record.type = 'offer'
       record.cost = new BigNumber(record.amount).times(record.price).toFixed(7)
 
       return record

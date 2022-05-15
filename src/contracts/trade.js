@@ -28,6 +28,9 @@ export default async ({
     HORIZON_URL,
     GLYPH_SIGNER_SK
   } = env
+
+  // TODO Keypair broke recently for some reason
+
   const ops = []
   const signers = [Keypair.fromSecret(GLYPH_SIGNER_SK)]
 

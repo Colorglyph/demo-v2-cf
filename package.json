@@ -27,15 +27,14 @@
     "@babel/plugin-proposal-optional-chaining": "^7.16.7",
     "@babel/preset-env": "^7.17.10",
     "@rollup/plugin-babel": "^5.3.1",
-    "@rollup/plugin-commonjs": "^22.0.0",
+    "@rollup/plugin-commonjs": "^21.0.3",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "babel-plugin-lodash": "^3.3.4",
     "miniflare": "^2.4.0",
-    "rollup": "^2.72.1",
+    "rollup": "^2.73.0",
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-node-builtins": "^2.1.2",
-    "rollup-plugin-node-globals": "^1.4.0",
-    "wrangler": "^2.0.3"
+    "rollup-plugin-node-globals": "^1.4.0"
   },
   "engines": {
     "npm": ">=7.24.0",

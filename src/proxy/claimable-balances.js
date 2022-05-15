@@ -41,6 +41,7 @@ export default ({ query, env }) => {
         }
       })
 
+      record.type = 'claimable-balance'
       record.cost = record.amount
 
       delete record.sponsor
